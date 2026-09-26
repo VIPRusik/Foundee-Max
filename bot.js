@@ -1,7 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { Bot } = require('@maxhub/max-bot-api');
+const { Bot, Keyboard } = require('@maxhub/max-bot-api');
 
 const bot = new Bot(process.env.BOT_TOKEN);
 
@@ -10,7 +10,9 @@ const candidates = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'data', 'candidates.json'), 'utf-8')
 );
 
-// ---------- Справочники вариантов по шагам ----------
+// ---------- Справочники вариантов ----------
+// payload кодируем как "шаг:ключ" — так обработчик всегда понимает, что за кнопку нажали,
+// даже без опоры на текущий session.step
 const OPTIONS = {
   industry: [
     { key: 'retail', label: '🛒 Розница/торговля' },
@@ -18,7 +20,7 @@ const OPTIONS = {
     { key: 'agro', label: '🌾 АПК/сезонные работы' },
     { key: 'other', label: 'Другое' },
   ],
-  employment_type: [
+  employment: [
     { key: 'full', label: 'Полная занятость' },
     { key: 'part', label: 'Частичная занятость' },
     { key: 'shift', label: 'Подработка/разовая' },
@@ -30,13 +32,15 @@ const OPTIONS = {
   ],
 };
 
-function renderMenu(title, options) {
-  let text = `${title}\n\n`;
-  options.forEach((opt, i) => {
-    text += `${i + 1}. ${opt.label}\n`;
-  });
-  text += '\nОтветь номером варианта.';
-  return text;
+function buildKeyboard(step, options) {
+  const rows = options.map((opt) => [
+    Keyboard.button.callback(opt.label, `${step}:${opt.key}`),
+  ]);
+  return Keyboard.inlineKeyboard(rows);
+}
+
+function keyboardExtra(step, options) {
+  return { attachments: [buildKeyboard(step, options)] };
 }
 
 // ---------- Состояние диалога по chatId ----------
@@ -92,63 +96,42 @@ function startFlow(ctx) {
   const session = getSession(ctx.chatId);
   session.step = 'industry';
   return ctx.reply(
-    'Привет! Я помогу быстро найти сотрудников на сезонную или срочную вакансию 👋\n\n' +
-      renderMenu('В какой сфере вакансия?', OPTIONS.industry)
+    'Привет! Я помогу быстро найти сотрудников на сезонную или срочную вакансию 👋\n\nВ какой сфере вакансия?',
+    keyboardExtra('industry', OPTIONS.industry)
   );
 }
 
 bot.command('start', (ctx) => startFlow(ctx));
 bot.on('bot_started', (ctx) => startFlow(ctx));
-
 bot.hears(['заново', 'сброс', 'restart', 'начать сначала'], (ctx) => startFlow(ctx));
 
-// ---------- Движок диалога ----------
-bot.on('message_created', (ctx) => {
+// ---------- Обработка нажатий кнопок ----------
+bot.on('message_callback', async (ctx) => {
   const chatId = ctx.chatId;
-  const text = (ctx.message.body.text || '').trim();
+  const payload = ctx.callback.payload || '';
+  const [step, key] = payload.split(':');
 
-  if (!text || text.startsWith('/start')) return;
+  await ctx.answerOnCallback({ notification: 'Принято' });
 
   const session = getSession(chatId);
 
-  if (session.step === 'industry') {
-    const idx = parseInt(text, 10) - 1;
-    const chosen = OPTIONS.industry[idx];
-    if (!chosen) {
-      return ctx.reply('Не понял ответ 🙁 Напиши номер варианта от 1 до ' + OPTIONS.industry.length);
-    }
-    session.data.industry = chosen.key;
+  if (step === 'industry') {
+    session.data.industry = key;
     session.step = 'city';
     return ctx.reply('В каком городе или районе?');
   }
 
-  if (session.step === 'city') {
-    if (text.length < 2) {
-      return ctx.reply('Напиши название города текстом, например: Москва');
-    }
-    session.data.city = text;
-    session.step = 'employment';
-    return ctx.reply(renderMenu('Какой формат занятости?', OPTIONS.employment_type));
-  }
-
-  if (session.step === 'employment') {
-    const idx = parseInt(text, 10) - 1;
-    const chosen = OPTIONS.employment_type[idx];
-    if (!chosen) {
-      return ctx.reply('Не понял ответ 🙁 Напиши номер варианта от 1 до ' + OPTIONS.employment_type.length);
-    }
-    session.data.employment_type = chosen.key;
+  if (step === 'employment') {
+    session.data.employment_type = key;
     session.step = 'availability';
-    return ctx.reply(renderMenu('Насколько срочно нужен человек?', OPTIONS.availability));
+    return ctx.reply(
+      'Насколько срочно нужен человек?',
+      keyboardExtra('availability', OPTIONS.availability)
+    );
   }
 
-  if (session.step === 'availability') {
-    const idx = parseInt(text, 10) - 1;
-    const chosen = OPTIONS.availability[idx];
-    if (!chosen) {
-      return ctx.reply('Не понял ответ 🙁 Напиши номер варианта от 1 до ' + OPTIONS.availability.length);
-    }
-    session.data.availability = chosen.key;
+  if (step === 'availability') {
+    session.data.availability = key;
     session.step = 'done';
 
     const results = findCandidates(session.data);
@@ -159,10 +142,30 @@ bot.on('message_created', (ctx) => {
     }
     return ctx.reply(resultText);
   }
+});
+
+// ---------- Обработка текста (только для шага "город") ----------
+bot.on('message_created', (ctx) => {
+  const chatId = ctx.chatId;
+  const text = (ctx.message.body.text || '').trim();
+
+  if (!text || text.startsWith('/start')) return;
+
+  const session = getSession(chatId);
+
+  if (session.step === 'city') {
+    if (text.length < 2) {
+      return ctx.reply('Напиши название города текстом, например: Москва');
+    }
+    session.data.city = text;
+    session.step = 'employment';
+    return ctx.reply('Какой формат занятости?', keyboardExtra('employment', OPTIONS.employment));
+  }
 
   return ctx.reply('Напиши /start, чтобы начать подбор сотрудников 👋');
 });
 
+// ---------- Глобальная защита от падений ----------
 bot.catch((error, ctx) => {
   console.error('⚠️ Ошибка при обработке сообщения:', error);
   if (ctx && ctx.chatId) {
