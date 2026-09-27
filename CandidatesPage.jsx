@@ -1,37 +1,15 @@
 import React, { useState } from 'react';
 import { MaxUI, Panel, Button, Typography, Container, Flex } from '@maxhub/max-ui';
 
-// 1. Зафиксированные демонстрационные данные 3 кандидатов
-const INITIAL_CANDIDATES = [
-  {
-    id: 1,
-    name: 'Иван Иванов',
-    age: 28,
-    experience: '3 года',
-    city: 'Москва',
-    phone: '+7 (999) 111-22-33'
-  },
-  {
-    id: 2,
-    name: 'Анна Сидорова',
-    age: 32,
-    experience: '5 лет',
-    city: 'Санкт-Петербург',
-    phone: '+7 (999) 444-55-66'
-  },
-  {
-    id: 3,
-    name: 'Алексей Петров',
-    age: 24,
-    experience: '1 год',
-    city: 'Новосибирск',
-    phone: '+7 (999) 777-88-99'
-  }
-];
+// 1. Импортируем массив из JSON-файла
+import allCandidates from './data/candidates.json';
 
 export default function CandidatesPage() {
   // Храним ID кандидатов, у которых телефон уже открыт
   const [visiblePhones, setVisiblePhones] = useState({});
+
+  // 2. Берем строго первые 3 карточки кандидатов
+  const displayedCandidates = allCandidates.slice(0, 3);
 
   const togglePhoneVisibility = (id) => {
     setVisiblePhones((prev) => ({
@@ -47,9 +25,9 @@ export default function CandidatesPage() {
           Список кандидатов
         </Typography.Title>
 
-        {/* 2. Список из карточек кандидатов */}
+        {/* Список карточек кандидатов */}
         <Flex direction="column" gap="16px">
-          {INITIAL_CANDIDATES.map((candidate) => (
+          {displayedCandidates.map((candidate) => (
             <Panel key={candidate.id} style={{ padding: '20px', borderRadius: '12px' }}>
               <Flex direction="column" gap="8px">
                 {/* Имя кандидата */}
@@ -57,7 +35,7 @@ export default function CandidatesPage() {
                   {candidate.name}
                 </Typography.Title>
                 
-                {/* Основные параметры */}
+                {/* Выводим параметры формату */}
                 <Typography.Body>
                   <strong>Возраст:</strong> {candidate.age} {getAgeAddition(candidate.age)}
                 </Typography.Body>
@@ -70,7 +48,7 @@ export default function CandidatesPage() {
                   <strong>Город:</strong> {candidate.city}
                 </Typography.Body>
 
-                {/* 3. Логика скрытия/отображения телефона */}
+                {/* 3. Кнопка «Показать телефон» вместо сразу видимого номера */}
                 <Flex align="center" gap="12px" style={{ marginTop: '8px' }}>
                   <Typography.Body>
                     <strong>Телефон:</strong>{' '}
@@ -100,7 +78,7 @@ export default function CandidatesPage() {
   );
 }
 
-// Вспомогательная функция склонения возраста
+// Вспомогательная функция склонения возраста (год / года / лет)
 function getAgeAddition(age) {
   const lastDigit = age % 10;
   const lastTwoDigits = age % 100;
