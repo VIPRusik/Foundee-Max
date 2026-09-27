@@ -140,7 +140,18 @@ bot.on('message_callback', async (ctx) => {
     if (!resultText) {
       return ctx.reply('По этим параметрам пока никого не нашлось 😔\nНапиши /start, чтобы попробовать другие критерии.');
     }
-    return ctx.reply(resultText);
+    return ctx.reply(resultText, {
+      attachments: [
+        {
+          type: 'inline_keyboard',
+          payload: {
+            buttons: [[
+              { type: 'open_app', text: '📋 Открыть список карточками', web_app: 'https://max-miniapp-eight.vercel.app' }
+            ]]
+          }
+        }
+      ]
+    });
   }
 });
 
