@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: max_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000" # Если есть вебхуки или мини-апп
+    volumes:
+      # Монтируем папку data, чтобы данные не терялись при перезапуске контейнера
+      - ./data:/app/data
+    
+
+ 
