@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Устанавливаем зависимости (используем npm ci для чистой установки по package-lock.json)
-RUN npm ci 
+RUN npm install
 
 # Копируем весь остальной код проекта
 COPY . .
