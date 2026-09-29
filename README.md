@@ -42,3 +42,6 @@ docker-compose logs -f
 ```bash 
 docker-compose down
 ```
+
+
+## Мы будем стараться, пропустите в финальный этап, пожалуйста)
