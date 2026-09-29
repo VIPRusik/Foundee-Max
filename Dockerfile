@@ -7,8 +7,12 @@ WORKDIR /app
 # Сначала копируем только файлы зависимостей, чтобы использовать кэш Docker
 COPY package*.json ./
 
+RUN npm config set strict-ssl false
+
 # Устанавливаем зависимости (используем npm ci для чистой установки по package-lock.json)
 RUN npm install
+
+RUN npm config set strict-ssl true
 
 # Копируем весь остальной код проекта
 COPY . .

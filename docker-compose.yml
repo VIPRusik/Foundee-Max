@@ -8,12 +8,16 @@ services:
     env_file:
       - .env
     ports:
-      - "3000:3000" # Если есть вебхуки или мини-апп
+      - "3000:3000" # мини-апп
     volumes:
       # Монтируем папку data, чтобы данные не терялись при перезапуске контейнера
       - ./data:/app/data
-      - ./app:/app
-      - ./node_modules:/app/node_modules
+      - .:/app #./app:/app
+      - /app/node_modules # ./node_modules:/app/node_modules
+      - ./certs:/app/certs
+    environment:
+      - NODE_EXTRA_CA_CERTS=/app/certs/russian_trusted_bundle.pem
+
     
 
  
