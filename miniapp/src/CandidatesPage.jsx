@@ -8,8 +8,12 @@ export default function CandidatesPage() {
   // Храним ID кандидатов, у которых телефон уже открыт
   const [visiblePhones, setVisiblePhones] = useState({});
 
-  // 2. Берем строго первые 3 карточки кандидатов
-  const displayedCandidates = allCandidates.slice(0, 3);
+  // 2. Берём кандидатов по ID из ссылки, если они переданы — иначе первые 3 по умолчанию
+  const params = new URLSearchParams(window.location.search);
+  const idsParam = params.get('ids');
+  const displayedCandidates = idsParam
+    ? allCandidates.filter((c) => idsParam.split(',').includes(String(c.id)))
+    : allCandidates.slice(0, 3);
 
   const togglePhoneVisibility = (id) => {
     setVisiblePhones((prev) => ({

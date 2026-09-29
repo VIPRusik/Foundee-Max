@@ -203,13 +203,16 @@ bot.on('message_callback', async (ctx) => {
     if (!resultText) {
       return ctx.reply('По этим параметрам пока никого не нашлось 😔\nНапиши /start, чтобы попробовать другие критерии.');
     }
+    const idsParam = results.map((c) => c.id).join(',');
+    const miniAppUrl = `https://max-miniapp-eight.vercel.app/?ids=${idsParam}`;
+
     return ctx.reply(resultText, {
       attachments: [
         {
           type: 'inline_keyboard',
           payload: {
             buttons: [[
-              { type: 'open_app', text: '📋 Открыть список карточками', web_app: 'https://max-miniapp-eight.vercel.app' }
+              { type: 'open_app', text: '📋 Открыть список карточками', web_app: miniAppUrl }
             ]]
           }
         }
