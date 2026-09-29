@@ -49,9 +49,9 @@ try {
   }));
   // Подменяем глобальный fetch на fetch из undici
   globalThis.fetch = undiciFetch;
-  console.log('✅ Кастомный SSL-сертификат загружен, fetch переопределён.');
+  console.log('Кастомный SSL-сертификат загружен, fetch переопределён.');
 } catch (error) {
-  console.error('❌ Ошибка загрузки SSL-сертификата:', error);
+  console.error('Ошибка загрузки SSL-сертификата:', error);
 }
 */ 
 
