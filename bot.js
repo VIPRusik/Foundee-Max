@@ -120,6 +120,43 @@ function resetSession(chatId) {
   sessions.set(chatId, { step: 'idle', data: {} });
 }
 
+// ---------- Роли пользователей ----------
+const USERS_FILE = path.join(__dirname, 'data', 'users.json');
+
+function loadUsers() {
+  try {
+    if (!fs.existsSync(USERS_FILE)) return {};
+    return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8') || '{}');
+  } catch (e) {
+    console.error('Ошибка чтения users.json:', e);
+    return {};
+  }
+}
+
+function saveUsers(users) {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Ошибка записи users.json:', e);
+  }
+}
+
+function getUserRole(userId) {
+  const users = loadUsers();
+  return users[userId]?.role || null;
+}
+
+function setUserRole(userId, role) {
+  const users = loadUsers();
+  users[userId] = { ...users[userId], role, updatedAt: new Date().toISOString() };
+  saveUsers(users);
+}
+
+const ROLE_OPTIONS = [
+  { key: 'employer', label: 'Я работодатель' },
+  { key: 'seeker',   label: 'Я ищу работу' },
+];
+
 // ---------- Matching ----------
 function findCandidates(criteria) {
   let filtered = candidates.filter(
@@ -156,13 +193,53 @@ function formatResults(results) {
 // ---------- Запуск диалога ----------
 function startFlow(ctx) {
   resetSession(ctx.chatId);
+  const userId = ctx.userId || ctx.chatId;
+  const role = getUserRole(userId);
+
+  // Нет роли — спрашиваем
+  if (!role) {
+    const session = getSession(ctx.chatId);
+    session.step = 'role';
+    return ctx.reply(
+      'Привет! Я Foundee-Max 👋\nПомогу быстро найти сотрудников или работу.\n\nКто вы?',
+      keyboardExtra('role', ROLE_OPTIONS)
+    );
+  }
+
+  // Роль уже есть — сразу в нужный сценарий
+  return role === 'employer' ? startEmployerFlow(ctx) : startSeekerFlow(ctx);
+}
+
+function startEmployerFlow(ctx) {
+  resetSession(ctx.chatId);
   const session = getSession(ctx.chatId);
   session.step = 'industry';
+  session.data.role = 'employer';
   return ctx.reply(
-    'Привет! Я помогу быстро найти сотрудников на сезонную или срочную вакансию 👋\n\nВ какой сфере вакансия?',
+    'Помогу найти сотрудников на сезонную или срочную вакансию 👋\n\nВ какой сфере вакансия?',
     keyboardExtra('industry', OPTIONS.industry)
   );
 }
+
+function startSeekerFlow(ctx) {
+  resetSession(ctx.chatId);
+  const session = getSession(ctx.chatId);
+  session.step = 'seeker_industry';
+  session.data.role = 'seeker';
+  return ctx.reply(
+    'Помогу найти подходящую работу 👋\n\nВ какой сфере ищете?',
+    keyboardExtra('seeker_industry', OPTIONS.industry)
+  );
+}
+
+// Команда смены роли
+bot.command('change_role', (ctx) => {
+  const userId = ctx.userId || ctx.chatId;
+  const users = loadUsers();
+  if (users[userId]) delete users[userId].role;
+  saveUsers(users);
+  return startFlow(ctx);
+});
 
 bot.command('start', (ctx) => startFlow(ctx));
 bot.on('bot_started', (ctx) => startFlow(ctx));
@@ -177,6 +254,44 @@ bot.on('message_callback', async (ctx) => {
   await ctx.answerOnCallback({ notification: 'Принято' });
 
   const session = getSession(chatId);
+
+  // === Выбор роли ===
+  if (step === 'role') {
+    const userId = ctx.userId || chatId;
+    setUserRole(userId, key);
+    session.data.role = key;
+
+    if (key === 'employer') {
+      session.step = 'industry';
+      return ctx.reply(
+        'Отлично! В какой сфере вакансия?',
+        keyboardExtra('industry', OPTIONS.industry)
+      );
+    } else {
+      session.step = 'seeker_industry';
+      return ctx.reply(
+        'Отлично! В какой сфере ищете работу?',
+        keyboardExtra('seeker_industry', OPTIONS.industry)
+      );
+    }
+  }
+
+    // === Сценарий соискателя ===
+  if (step === 'seeker_industry') {
+    session.data.industry = key;
+    session.step = 'seeker_city';
+    return ctx.reply('В каком городе ищете работу?');
+  }
+
+  if (step === 'seeker_employment') {
+    session.data.employment_type = key;
+    session.step = 'seeker_done';
+
+    // TODO: здесь подставить функцию поиска вакансий
+    return ctx.reply(
+      `Ищу вакансии в сфере "${key}"...\n\nПока в MVP доступны только тестовые вакансии — список скоро появится.`,
+    );
+  }
 
   if (step === 'industry') {
     session.data.industry = key;
@@ -237,6 +352,18 @@ bot.on('message_created', (ctx) => {
     session.data.city = text;
     session.step = 'employment';
     return ctx.reply('Какой формат занятости?', keyboardExtra('employment', OPTIONS.employment));
+  }
+
+  if (session.step === 'seeker_city') {
+    if (text.length < 2) {
+      return ctx.reply('Напишите название города, например: Москва');
+    }
+    session.data.city = text;
+    session.step = 'seeker_employment';
+    return ctx.reply(
+      'Какой формат занятости вам подходит?',
+      keyboardExtra('seeker_employment', OPTIONS.employment)
+    );
   }
 
   return ctx.reply('Напиши /start, чтобы начать подбор сотрудников 👋');
