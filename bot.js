@@ -1,9 +1,72 @@
-require('dotenv').config();
+const { Agent, fetch: undiciFetch } = require('undici');
+//const { Agent } = require('undici');
 const fs = require('fs');
+
+// Путь к файлу с сертификатом внутри контейнера
+//const caPath = '/app/certs/russian_trusted_root_ca.pem';
+//const ca = fs.readFileSync(caPath, `utf-8`);
+
+// Читаем сертификаты и создаём агент
+const ca = fs.readFileSync('/app/certs/russian_trusted_bundle.pem');
+
+//я пытался решить проблему с сертификатом ниже, но всё что я смог - отключить проверку ценой безопасности.
+//ну, у нас ведь ещё не product, верно?
+
+//прежний вариант
+const customAgent = new Agent({
+  connect: { 
+    ca: [ca],
+    rejectUnauthorized: false //временно
+  }
+});
+
+/*
+//новый варик
+const ca = fs.readFileSync(caPath); 
+const customAgent = new Agent({
+  connect: { ca: ca } // передаем Buffer целиком
+});
+*/
+
+// Создаем функцию fetch, которая будет использовать этот агент
+const customFetch = (url, options = {}) => {
+  console.log('customFetch вызван для:', url); // проверка
+  return undiciFetch(url, {
+    ...options,
+    dispatcher: customAgent
+  });
+};
+
+globalThis.fetch = customFetch; //меняет глобальный fearch 
+console.log('✅ Кастомный fetch с SSL-сертификатом создан.'); //ну да-да
+
+/* //это старый кусок кода, хз зачем оставил его тут
+try {
+  const ca = fs.readFileSync(caPath);
+  // Создаём диспетчер с нашими CA-сертификатами
+  setGlobalDispatcher(new Agent({
+    connect: { ca }
+  }));
+  // Подменяем глобальный fetch на fetch из undici
+  globalThis.fetch = undiciFetch;
+  console.log('✅ Кастомный SSL-сертификат загружен, fetch переопределён.');
+} catch (error) {
+  console.error('❌ Ошибка загрузки SSL-сертификата:', error);
+}
+*/ 
+
+// кусок выше использует undici и нужен для работы с сертификатами МинЦифры
+
+require('dotenv').config();
 const path = require('path');
 const { Bot, Keyboard } = require('@maxhub/max-bot-api');
 
-const bot = new Bot(process.env.BOT_TOKEN);
+// Создаём экземпляр бота с опцией fetch
+const bot = new Bot(process.env.BOT_TOKEN, {
+  clientOptions: {
+    fetch: customFetch 
+  }
+});
 
 // ---------- Данные ----------
 const candidates = JSON.parse(

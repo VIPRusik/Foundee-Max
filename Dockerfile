@@ -1,5 +1,14 @@
 # Используем легковесный образ Node.js
-FROM node:20-alpine
+FROM node:22-alpine
+
+# Устанавливаем пакет для управленя сертификатами, копируем во временную папку, обновляем системное хранилище
+RUN apk add --no-cache ca-certificates
+COPY certs/russian_trusted_root_ca.pem /usr/local/share/ca-certificates/russian_trusted_root_ca.crt
+COPY certs/russian_trusted_sub_ca.pem  /usr/local/share/ca-certificates/russian_trusted_sub_ca.crt
+RUN update-ca-certificates
+
+# Node.js должен использовать именно это хранилище
+ENV NODE_OPTIONS="--use-openssl-ca"
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -11,6 +20,7 @@ RUN npm config set strict-ssl false
 
 # Устанавливаем зависимости (используем npm ci для чистой установки по package-lock.json)
 RUN npm install
+RUN npm install undici@6
 
 RUN npm config set strict-ssl true
 
