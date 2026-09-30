@@ -23,5 +23,9 @@
     { "id": 22, "name": "Евгений", "age": 29, "industry": "retail", "city": "Казань", "employment_type": "full", "availability": "urgent", "experience": "Грузчик, 3 года", "phone": "+7 900 221-23-34" },
     { "id": 23, "name": "Алина", "age": 20, "industry": "horeca", "city": "Москва", "employment_type": "part", "availability": "week", "experience": "Без опыта, готова обучаться", "phone": "+7 900 231-24-35" },
     { "id": 24, "name": "Игнат", "age": 34, "industry": "agro", "city": "Ростов-на-Дону", "employment_type": "full", "availability": "urgent", "experience": "Бригадир, 7 лет", "phone": "+7 900 241-25-36" },
-    { "id": 25, "name": "Полина", "age": 25, "industry": "retail", "city": "Москва", "employment_type": "full", "availability": "flexible", "experience": "Администратор зала, 3 года", "phone": "+7 900 251-26-37" }
+    { "id": 25, "name": "Полина", "age": 25, "industry": "retail", "city": "Москва", "employment_type": "full", "availability": "flexible", "experience": "Администратор зала, 3 года", "phone": "+7 900 251-26-37" },
+    { "id": 26, "name": "Руслан", "age": 27, "industry": "other", "city": "Москва", "employment_type": "shift", "availability": "urgent", "experience": "Курьер, 2 года", "phone": "+7 900 261-27-38" },
+    { "id": 27, "name": "Гульнара", "age": 38, "industry": "other", "city": "Казань", "employment_type": "part", "availability": "week", "experience": "Уборка помещений, 6 лет", "phone": "+7 900 271-28-39" },
+    { "id": 28, "name": "Степан", "age": 24, "industry": "other", "city": "Санкт-Петербург", "employment_type": "full", "availability": "urgent", "experience": "Комплектовщик на складе, 1 год", "phone": "+7 900 281-29-40" },
+    { "id": 29, "name": "Ирина", "age": 45, "industry": "other", "city": "Краснодар", "employment_type": "part", "availability": "flexible", "experience": "Оператор колл-центра, 4 года", "phone": "+7 900 291-30-41" }
   ]

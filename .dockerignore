@@ -3,6 +3,9 @@ npm-debug.log
 .env
 .git
 .gitignore
+.vscode
 README.md
-data/
-miniapp/node_modules
+miniapp
+data/users.json
+data/vacancies.json
+data/*.tmp

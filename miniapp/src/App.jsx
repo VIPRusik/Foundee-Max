@@ -1,5 +1,5 @@
-import CandidatesPage from './CandidatesPage';
+import ResultsPage from './ResultsPage';
 
 export default function App() {
-  return <CandidatesPage />;
+  return <ResultsPage />;
 }

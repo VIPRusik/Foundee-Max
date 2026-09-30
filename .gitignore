@@ -1,2 +1,7 @@
 node_modules/
 .env
+
+# Данные, которые бот создаёт во время работы
+data/users.json
+data/vacancies.json
+data/*.tmp

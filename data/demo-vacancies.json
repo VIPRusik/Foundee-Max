@@ -1,0 +1,14 @@
+[
+  { "id": "demo-1", "title": "Бариста", "industry": "horeca", "city": "Москва", "employment_type": "full", "availability": "urgent", "salary": "70 000 ₽/мес", "phone": "+7 901 100-00-01" },
+  { "id": "demo-2", "title": "Официант на выходные", "industry": "horeca", "city": "Москва", "employment_type": "part", "availability": "week", "salary": "2 500 ₽/смена + чаевые", "phone": "+7 901 100-00-02" },
+  { "id": "demo-3", "title": "Повар горячего цеха", "industry": "horeca", "city": "Санкт-Петербург", "employment_type": "full", "availability": "week", "salary": "85 000 ₽/мес", "phone": "+7 901 100-00-03" },
+  { "id": "demo-4", "title": "Помощник на банкет", "industry": "horeca", "city": "Казань", "employment_type": "shift", "availability": "urgent", "salary": "3 000 ₽/смена", "phone": "+7 901 100-00-04" },
+  { "id": "demo-5", "title": "Продавец-кассир", "industry": "retail", "city": "Москва", "employment_type": "full", "availability": "urgent", "salary": "65 000 ₽/мес", "phone": "+7 901 100-00-05" },
+  { "id": "demo-6", "title": "Выкладчик товара", "industry": "retail", "city": "Казань", "employment_type": "shift", "availability": "urgent", "salary": "2 200 ₽/смена", "phone": "+7 901 100-00-06" },
+  { "id": "demo-7", "title": "Продавец-консультант", "industry": "retail", "city": "Санкт-Петербург", "employment_type": "part", "availability": "flexible", "salary": "40 000 ₽/мес", "phone": "+7 901 100-00-07" },
+  { "id": "demo-8", "title": "Сборщик урожая", "industry": "agro", "city": "Краснодар", "employment_type": "shift", "availability": "urgent", "salary": "3 500 ₽/день, жильё", "phone": "+7 901 100-00-08" },
+  { "id": "demo-9", "title": "Тракторист на сезон", "industry": "agro", "city": "Ростов-на-Дону", "employment_type": "full", "availability": "week", "salary": "90 000 ₽/мес", "phone": "+7 901 100-00-09" },
+  { "id": "demo-10", "title": "Разнорабочий на ферму", "industry": "agro", "city": "Воронеж", "employment_type": "shift", "availability": "urgent", "salary": "2 800 ₽/день", "phone": "+7 901 100-00-10" },
+  { "id": "demo-11", "title": "Курьер", "industry": "other", "city": "Москва", "employment_type": "part", "availability": "urgent", "salary": "от 1 800 ₽/смена", "phone": "+7 901 100-00-11" },
+  { "id": "demo-12", "title": "Комплектовщик на склад", "industry": "other", "city": "Санкт-Петербург", "employment_type": "shift", "availability": "week", "salary": "3 200 ₽/смена", "phone": "+7 901 100-00-12" }
+]
