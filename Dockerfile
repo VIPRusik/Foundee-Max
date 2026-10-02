@@ -29,4 +29,8 @@ RUN npm config set strict-ssl true
 # Копируем весь остальной код проекта
 COPY . .
 
+# Проверка работоспособности для хоста
+HEALTHCHECK --interval=60s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl --fail http://localhost:5000/healthz || exit 1
+
 CMD ["node", "bot.js"]
