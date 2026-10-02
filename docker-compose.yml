@@ -9,4 +9,10 @@ services:
       - .env
     volumes:
       # Роли пользователей и созданные вакансии сохраняются между перезапусками
-      - ./data:/app/data
+      - .:/app #./app:/app
+      - /app/node_modules # ./node_modules:/app/node_modules
+      - ./certs:/app/certs
+    environment:
+      - NODE_ENV=production
+      - NODE_TLS_REJECT_UNAUTHORIZED=0 #отключение проверки TLS
+
